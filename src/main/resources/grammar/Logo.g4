@@ -18,6 +18,13 @@ liste_instructions :
 instruction :
    'av' expr # av
  | 'td' expr # td
+ | 'tg' expr # tg
+ | 'lc' # lc
+ | 'bc' # bc
+ | 're' expr # re
+ | 'fpos' expr expr # fpos
+ | 'fcc' expr # fcc
+ | 'fcap' expr # fcap
 ; 
 
 expr :

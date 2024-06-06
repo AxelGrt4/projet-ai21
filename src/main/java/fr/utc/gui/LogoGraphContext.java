@@ -14,6 +14,7 @@ public class LogoGraphContext {
 	// GraphicsContext associé au canvas de l'interface graphique
 	GraphicsContext gclocal;
 	ExecutorService pool;
+	private static LogoGraphContext logoGraphContext;
 
 	public LogoGraphContext(GraphicsContext gclocal) {
 		this.gclocal = gclocal;
@@ -22,6 +23,12 @@ public class LogoGraphContext {
 		// queue
 		pool.execute(drawTask);
 	}
+
+
+	public static LogoGraphContext getInstance() {
+		return logoGraphContext;
+	}
+
 
 	public void addLine(GraphLineParameter gp) {
 		lineQueue.add(gp);
