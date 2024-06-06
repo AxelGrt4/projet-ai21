@@ -25,10 +25,18 @@ instruction :
  | 'fpos' expr expr # fpos
  | 'fcc' expr # fcc
  | 'fcap' expr # fcap
+ | 'repete' expr '[' liste_instructions ']' #repete
+ | 'store' #store
+ | 'move' #move
 ; 
 
 expr :
    FLOAT         # float
- | '(' expr ')'  # parenthese 
+ | '(' expr ')'  # parenthese
+ | expr ('*' | '/') expr #mult
+ | expr ('+' | '-') expr #sum
+ | 'hasard' expr #hasard
+ | ( 'cos(' | 'sin(') expr ')' #cos
+ | 'loop' #loop
 ;
 

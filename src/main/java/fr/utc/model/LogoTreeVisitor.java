@@ -8,12 +8,19 @@ import org.xml.sax.ErrorHandler;
 import fr.utc.gui.Traceur;
 import fr.utc.parsing.LogoParser.AvContext;
 import fr.utc.parsing.LogoParser.BcContext;
+import fr.utc.parsing.LogoParser.CosContext;
 import fr.utc.parsing.LogoParser.FcapContext;
 import fr.utc.parsing.LogoParser.FccContext;
 import fr.utc.parsing.LogoParser.FloatContext;
 import fr.utc.parsing.LogoParser.FposContext;
+import fr.utc.parsing.LogoParser.HasardContext;
 import fr.utc.parsing.LogoParser.LcContext;
+import fr.utc.parsing.LogoParser.LoopContext;
+import fr.utc.parsing.LogoParser.MultContext;
+import fr.utc.parsing.LogoParser.ParentheseContext;
 import fr.utc.parsing.LogoParser.ReContext;
+import fr.utc.parsing.LogoParser.RepeteContext;
+import fr.utc.parsing.LogoParser.SumContext;
 import fr.utc.parsing.LogoParser.TdContext;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
@@ -44,20 +51,13 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 	ParseTreeProperty<Double> atts = new ParseTreeProperty<Double>();
 	ParseTreeProperty<Color> attsColor = new ParseTreeProperty<Color>();
 
+	Double indexRep;
 	public void setValue(ParseTree node, double value) {
 		atts.put(node, value);
 	}
 
 	public double getValue(ParseTree node) {
 		Double value = atts.get(node);
-		if (value == null) {
-			throw new NullPointerException();
-		}
-		return value;
-	}
-
-	public Color getValueColor(ParseTree node) {
-		Color value = attsColor.get(node);
 		if (value == null) {
 			throw new NullPointerException();
 		}
@@ -158,6 +158,125 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		}
 
 		return 0;
+	}
+
+	@Override
+	public Integer visitCos(CosContext ctx) {
+		Pair<Integer, Double> bilan = evaluate(ctx.expr());
+		String operateur = ctx.getChild(0).getText();
+
+		if (bilan.a == 0) {
+			switch (operateur) {
+				case "cos(":
+					setValue(ctx, Math.cos(Math.toRadians(bilan.b)));
+					break;
+				case "sin(":
+					setValue(ctx, Math.sin(Math.toRadians(bilan.b)));
+					break;
+				default:
+					break;
+			}
+
+		}
+		return 0;
+	}
+
+	@Override
+	public Integer visitHasard(HasardContext ctx) {
+		try {
+
+			Pair<Integer, Double> bilan = evaluate(ctx.expr());
+
+			if (bilan.a == 0)
+				setValue(ctx, Math.random() * bilan.b);
+			else
+				return bilan.a;
+
+		} catch (NullPointerException ex) {
+			ex.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public Integer visitLoop(LoopContext ctx) {
+		if(indexRep != null) {
+			setValue(ctx, indexRep);
+		}
+		return 0;
+	}
+
+	@Override
+	public Integer visitMult(MultContext ctx) {
+		Pair<Integer, Double> exprL = evaluate(ctx.expr(0));
+		Pair<Integer, Double> exprR = evaluate(ctx.expr(1));
+		String operateur = ctx.getChild(1).getText();
+
+		if (exprL.a == 0 && exprR.a == 0) {
+			switch (operateur) {
+				case "*":
+					setValue(ctx, exprL.b * exprR.b);
+					break;
+				case "/":
+					if (exprR.b != 0) {
+						setValue(ctx, exprL.b / exprR.b);
+					} 
+					else {
+						log.appendLog("Attention : division par 0, instruction ignorée");
+						return 1;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		return 0;
+	}
+
+	@Override
+	public Integer visitParenthese(ParentheseContext ctx) {
+		Pair<Integer, Double> expr = evaluate(ctx.expr());
+		if (expr.a == 0) {
+			setValue(ctx, expr.b);
+		}
+		return 0;
+	}
+
+	@Override
+	public Integer visitSum(SumContext ctx) {
+		Pair<Integer, Double> exprL = evaluate(ctx.expr(0));
+		Pair<Integer, Double> exprR = evaluate(ctx.expr(1));
+		String operateur = ctx.getChild(1).getText();
+
+		if (exprL.a == 0 && exprR.a == 0) {
+			switch (operateur) {
+				case "+":
+					setValue(ctx, exprL.b + exprR.b);
+					break;
+				case "-":
+					setValue(ctx, exprL.b - exprR.b);
+					break;
+				default:
+					break;
+			}
+		}
+		return 0;
+	}
+
+	
+
+	@Override
+	public Integer visitRepete(RepeteContext ctx) {
+		Pair<Integer, Double> exprRepet = evaluate(ctx.expr());
+		if(exprRepet.a==0){
+			for(int i = 1;i <= exprRepet.b; i++){
+				indexRep = (double)i;
+				visit(ctx.liste_instructions());
+			}
+			indexRep = null;
+		}
+		return 0;
+		
 	}
 
 	/**
