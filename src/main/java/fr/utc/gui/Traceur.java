@@ -6,11 +6,40 @@
  */
 package fr.utc.gui;
 
+import java.util.Stack;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.paint.Color;
 
 public class Traceur {
+
+	private class Position {
+		double posX, posY, angle;
+
+		public Position(double posX, double posY, double angle) {
+			this.posX = posX;
+			this.posY = posY;
+			this.angle = angle;
+		}
+
+		public double getPosX() {
+			return posX;
+		}
+
+		public double getPosY() {
+			return posY;
+		}
+
+		public double getAngle() {
+			return angle;
+		}
+
+		public void setAngle(double angle) {
+			this.angle = angle;
+		}
+	}
+
 	private Color couleur = Color.BLACK;
 	private double initx = 350, inity = 350; // position initiale
 	private double posx = initx, posy = inity; // position courante
@@ -18,6 +47,7 @@ public class Traceur {
 	private double teta;
 	private boolean crayon = true;
 	ObjectProperty<GraphLineParameter> line;
+	private Stack<Position> stackPositions = new Stack<>();
 
 	public Traceur() {
 		setTeta();
@@ -115,6 +145,22 @@ public class Traceur {
 				couleur = Color.BLACK;
 				break;
 		}
+	}
+
+	public Integer store(){
+		stackPositions.push(new Position(posx, posy, angle));
+		return 0;
+	}
+
+	public Integer move(){
+		if (!stackPositions.isEmpty()){
+			Position p = stackPositions.pop();
+			posx = p.getPosX();
+			posy = p.getPosY();
+			angle = p.getAngle();
+			setTeta();
+		}
+		return 0;
 	}
 
 }

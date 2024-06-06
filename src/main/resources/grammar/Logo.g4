@@ -7,6 +7,8 @@ WS : [ \t\r\n]+ -> skip ;
 COMMENT1 : '//' .*? [\r\n]+ -> skip;
 COMMENT2 : '/*' .*? '*/' -> skip;
 
+ID : [a-zA-Z]+ ;
+
 programme :
  liste_instructions  
 ;
@@ -28,6 +30,9 @@ instruction :
  | 'repete' expr '[' liste_instructions ']' #repete
  | 'store' #store
  | 'move' #move
+ | 'donne "' ID expr #write
+ | 'si' expr '[' liste_instructions ']' ('[' liste_instructions ']')? #if
+ | 'tantque' expr '[' liste_instructions ']' #while
 ; 
 
 expr :
@@ -38,5 +43,12 @@ expr :
  | 'hasard' expr #hasard
  | ( 'cos(' | 'sin(') expr ')' #cos
  | 'loop' #loop
+ | expr '<' expr #inf
+ | expr '>' expr #sup
+ | expr '==' expr #egal
+ | expr '!=' expr #diff
+ | expr '<=' expr #infeg
+ | expr '>=' expr #supeg 
+ | ':' ID #read
 ;
 
