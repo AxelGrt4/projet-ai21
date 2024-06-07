@@ -64,8 +64,9 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 	ParseTreeProperty<Double> atts = new ParseTreeProperty<Double>();
 	ParseTreeProperty<Color> attsColor = new ParseTreeProperty<Color>();
 	Stack<TableSymbole> tableSymboles = new Stack<>();
-
 	Double indexRep;
+
+
 
 	public void setValue(ParseTree node, double value) {
 		atts.put(node, value);
@@ -111,6 +112,7 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
 	@Override
 	public Integer visitAv(AvContext ctx) {
 		Pair<Integer, Double> bilan = evaluate(ctx.expr());
@@ -122,6 +124,19 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		}
 		return bilan.a;
 	}
+
+
+	// Expressions
+
+	@Override
+	public Integer visitFloat(FloatContext ctx) {
+		String floatText = ctx.FLOAT().getText();
+		setValue(ctx, Double.valueOf(floatText));
+		return 0;
+	}
+
+	// TP 2
+
 
 	@Override
 	public Integer visitRe(ReContext ctx) {
@@ -135,16 +150,6 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return bilan.a;
 	}
 
-	// Expressions
-
-	@Override
-	public Integer visitFloat(FloatContext ctx) {
-		String floatText = ctx.FLOAT().getText();
-		setValue(ctx, Double.valueOf(floatText));
-		return 0;
-	}
-
-	// TP 2
 
 	@Override
 	public Integer visitBc(BcContext ctx) {
@@ -153,6 +158,7 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
 	@Override
 	public Integer visitLc(LcContext ctx) {
 		traceur.lc();
@@ -160,10 +166,11 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
 	@Override
 	public Integer visitFpos(FposContext ctx) {
-		Pair<Integer, Double> exprX = evaluate(ctx.expr(0));
-		Pair<Integer, Double> exprY = evaluate(ctx.expr(0));
+		Pair<Integer, Double> exprX = evaluate(ctx.expr(0));   // Besoin de récupérer 2 paires de valeurs pour la position
+		Pair<Integer, Double> exprY = evaluate(ctx.expr(1));
 		if (exprX.a == 0 && exprY.a == 0) {
 			traceur.fpos(exprX.b, exprY.b);
 			log.appendLog("La position est maintenant ", String.valueOf(exprX.b), ", ", String.valueOf(exprY.b));
@@ -171,6 +178,7 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 
 		return 0;
 	}
+
 
 	@Override
 	public Integer visitFcap(FcapContext ctx) {
@@ -196,27 +204,6 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 	// TP 3
 
 	@Override
-	public Integer visitCos(CosContext ctx) {
-		Pair<Integer, Double> bilan = evaluate(ctx.expr());
-		String operateur = ctx.getChild(0).getText();
-
-		if (bilan.a == 0) {
-			switch (operateur) {
-				case "cos(":
-					setValue(ctx, Math.cos(Math.toRadians(bilan.b)));
-					break;
-				case "sin(":
-					setValue(ctx, Math.sin(Math.toRadians(bilan.b)));
-					break;
-				default:
-					break;
-			}
-
-		}
-		return 0;
-	}
-
-	@Override
 	public Integer visitHasard(HasardContext ctx) {
 		try {
 
@@ -233,19 +220,34 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
+
 	@Override
-	public Integer visitLoop(LoopContext ctx) {
-		if (indexRep != null) {
-			setValue(ctx, indexRep);
+	public Integer visitParenthese(ParentheseContext ctx) {
+		Pair<Integer, Double> expr = evaluate(ctx.expr());
+		if (expr.a == 0) {
+			setValue(ctx, expr.b);
 		}
 		return 0;
 	}
 
+
+
+	@Override
+	public Integer visitLoop(LoopContext ctx) {
+		if (indexRep != null) {
+			setValue(ctx, indexRep);            //indexRep correspond à la valeur de l'itération dans la boucle repete
+		}
+		return 0;
+	}
+
+
+
 	@Override
 	public Integer visitMult(MultContext ctx) {
-		Pair<Integer, Double> exprL = evaluate(ctx.expr(0));
-		Pair<Integer, Double> exprR = evaluate(ctx.expr(1));
-		String operateur = ctx.getChild(1).getText();
+		Pair<Integer, Double> exprL = evaluate(ctx.expr(0));   //valeur gauche de l'expression
+		Pair<Integer, Double> exprR = evaluate(ctx.expr(1));   //valeur droite de l'expression
+		String operateur = ctx.getChild(1).getText();     // Récupère l'élément en seconde position dans la ligne de code
 
 		if (exprL.a == 0 && exprR.a == 0) {
 			switch (operateur) {
@@ -267,14 +269,30 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
+
 	@Override
-	public Integer visitParenthese(ParentheseContext ctx) {
-		Pair<Integer, Double> expr = evaluate(ctx.expr());
-		if (expr.a == 0) {
-			setValue(ctx, expr.b);
+	public Integer visitCos(CosContext ctx) {
+		Pair<Integer, Double> bilan = evaluate(ctx.expr());
+		String operateur = ctx.getChild(0).getText();
+
+		if (bilan.a == 0) {
+			switch (operateur) {
+				case "cos(":
+					setValue(ctx, Math.cos(Math.toRadians(bilan.b)));
+					break;
+				case "sin(":
+					setValue(ctx, Math.sin(Math.toRadians(bilan.b)));
+					break;
+				default:
+					break;
+			}
+
 		}
 		return 0;
 	}
+
+
 
 	@Override
 	public Integer visitSum(SumContext ctx) {
@@ -297,6 +315,9 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
+	
+
 	@Override
 	public Integer visitRepete(RepeteContext ctx) {
 		Pair<Integer, Double> exprRepet = evaluate(ctx.expr());
@@ -310,6 +331,8 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 
 	}
+
+
 
 	@Override
 	public Integer visitMove(MoveContext arg0) {
