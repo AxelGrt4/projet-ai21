@@ -41,7 +41,7 @@ expr :
  | expr ('*' | '/') expr #mult
  | expr ('+' | '-') expr #sum
  | 'hasard' expr #hasard
- | 'cos(' | 'sin(') expr ')' #cos
+ | ( 'cos(' | 'sin(') expr ')' #cos
  | 'loop' #loop
  | expr '<' expr #inf
  | expr '>' expr #sup
