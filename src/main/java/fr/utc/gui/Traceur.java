@@ -155,9 +155,9 @@ public class Traceur {
 	public Integer move(){
 		if (!stackPositions.isEmpty()){
 			Position p = stackPositions.pop();
-			posx = p.getPosX();
-			posy = p.getPosY();
-			angle = p.getAngle();
+			posx = p.posX;
+			posy = p.posY;
+			angle = p.angle;
 			setTeta();
 		}
 		return 0;
