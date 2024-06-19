@@ -415,12 +415,7 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		}
 		return 0;
 	}
-
-	@Override
-	public Integer visitRead(ReadContext ctx) {
-		setValue(ctx, this.tableSymboles.peek().getEntry(ctx.ID().toString()));
-		return 0;
-	}
+	
 
 	@Override
 	public Integer visitSup(SupContext ctx) {
@@ -468,6 +463,8 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+	
+
 	@Override
 	public Integer visitIf(IfContext ctx) {
 		Pair<Integer, Double> bilan = evaluate(ctx.expr());
@@ -481,6 +478,14 @@ public class LogoTreeVisitor extends LogoStoppableTreeVisitor {
 		return 0;
 	}
 
+
+	@Override
+	public Integer visitRead(ReadContext ctx) {
+		setValue(ctx, this.tableSymboles.peek().getEntry(ctx.ID().toString()));
+		return 0;
+	}
+
+	
 	@Override
 	public Integer visitWhile(WhileContext ctx) {
 		Pair<Integer, Double> bilan = evaluate(ctx.expr());
